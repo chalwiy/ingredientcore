@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 58 58" role="img" aria-label="IngredientCore mark">
+  <rect width="58" height="58" rx="14" fill="#F7F6F2"/>
+  <path fill="#173B4D" d="M29 3C13.5 3 2 14.6 2 29s11.5 26 27 26c9.4 0 17.3-3.7 22.6-10.2l-7.2-6.4C40.6 42.7 35.6 45 29 45 19.3 45 12 38.2 12 29S19.3 13 29 13c6.6 0 11.6 2.3 15.4 6.6l7.2-6.4C46.3 6.7 38.4 3 29 3Z"/>
+  <rect x="27" y="24" width="10" height="10" rx="2" fill="#1B625C"/>
+</svg>
