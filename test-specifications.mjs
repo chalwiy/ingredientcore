@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { products } from './content/products.mjs';
+import { specifications } from './content/specifications.mjs';
+import { publicFiles } from './release-files.mjs';
+const base=process.argv[2]?new URL(process.argv[2].replace(/\/$/,'')+'/',import.meta.url):new URL('./',import.meta.url);
+const read=p=>fs.readFileSync(new URL(p,base),'utf8');
+const decode=s=>s.replaceAll('&amp;','&').replaceAll('&lt;','<').replaceAll('&gt;','>');
+const selected=['sodium-tripolyphosphate-stpp','sodium-hexametaphosphate-shmp','sodium-acid-pyrophosphate-sapp','monopotassium-phosphate-mkp','sodium-trimetaphosphate-stmp','potassium-sorbate','sodium-cmc'];
+assert.deepEqual(Object.keys(specifications).sort(),selected.sort());
+let rows=0;
+for(const p of products){
+ const html=read(`products/${p.slug}.html`),d=specifications[p.slug];
+ const sections=[...html.matchAll(/<section class="page-section product-specification"[\s\S]*?<\/section>/g)];
+ assert.equal(sections.length,d?1:0,p.slug);
+ if(!d)continue;
+ const section=sections[0][0];
+ assert.equal(d.publication,'reference-values-only');assert.equal(d.downloadApproved,false);
+ assert.ok(['parent-reference','standard-reference'].includes(d.kind));
+ assert.ok(d.scope && d.version && d.issuer && d.conditions && d.acceptance);
+ assert.ok(d.rows.length>0 && d.rows.every(row=>row.length===3 && row.every(cell=>typeof cell==='string'&&cell.trim())));
+ assert.equal([...section.matchAll(/<th scope="col">/g)].length,3);
+ assert.equal([...section.matchAll(/<th scope="row">/g)].length,d.rows.length);
+ assert.ok(section.includes('tabindex="0" role="region"'));
+ assert.ok(section.includes('aria-describedby="specification-scope specification-scroll"'));
+ assert.ok(!/\bdownload(?:=|\s)|\.internal|SPECIFICATION-AUDIT/.test(section));
+ const request=section.match(/href="([^"]+)"[^>]*>Request specification/);
+ assert.ok(request,p.slug);
+ const url=new URL(decode(request[1]),'https://example.invalid/products/page.html');
+ assert.equal(url.searchParams.get('ingredient'),p.name);
+ assert.equal(url.searchParams.get('intent'),'documents');
+ assert.equal(url.searchParams.get('from'),'product:'+p.slug);
+ assert.ok(url.searchParams.get('documents').includes('Current product specification'));
+ rows+=d.rows.length;
+}
+// Protect meanings that can be lost by formatting or by combining unlike sources.
+assert.deepEqual(specifications['monopotassium-phosphate-mkp'].rows[0],['KH₂PO₄ content — dry basis','≥ 98.0','%']);
+assert.deepEqual(specifications['potassium-sorbate'].rows[0],['Potassium sorbate content — dry basis','99.0–101.0','%']);
+assert.deepEqual(specifications['sodium-hexametaphosphate-shmp'].rows[1],['Inactive phosphate as P₂O₅','≤ 7.5','%']);
+assert.ok(read('products/sodium-cmc.html').includes('not results for an IngredientCore product'));
+assert.ok(!publicFiles.some(p=>/specifications\.mjs|SPECIFICATION-AUDIT|spec-review|\.pdf$|\.docx$/.test(p)));
+console.log(`Specification checks passed: ${selected.length} scoped reference groups, ${rows} rows, semantic tables, units/basis, request prefill and no raw-document release. Static checks, not browser rendering.`);

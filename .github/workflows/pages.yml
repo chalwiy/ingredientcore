@@ -1,0 +1,55 @@
+name: Build and publish IngredientCore
+on:
+  push:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: ingredientcore-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      site_url: ${{ steps.pages.outputs.base_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Build and verify
+        run: |
+          node build.mjs
+          node check.mjs
+          for test in test-*.mjs; do node "$test"; done
+      - name: Generate sitemap and public URLs
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          node publish.mjs
+          node check.mjs .publish
+          node test-phosphate-catalog.mjs .publish
+          node test-specifications.mjs .publish
+          node test-product-search.mjs .publish
+          node test-journeys.mjs .publish
+          node release-gate.mjs
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .publish
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

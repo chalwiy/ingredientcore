@@ -1,0 +1,10 @@
+import { specifications } from './specifications.mjs';
+import { inquiryUrl } from './journeys.mjs';
+
+export function specificationSection(product,e){
+ const data=specifications[product.slug];
+ if(!data)return '';
+ if(data.publication!=='reference-values-only')throw new Error('Unreviewed specification publication: '+product.slug);
+ const url=inquiryUrl({ingredient:product.name,documents:'Current product specification for the proposed grade and source, including test methods; confirm availability',purpose:'Compare the proposed specification with the reference values on the product page',intent:'documents',from:'product:'+product.slug});
+ return `<section class="page-section product-specification" id="reference-specification"><div class="container"><div class="section-kicker">SPECIFICATION REFERENCE</div><h2>${e(data.title)}</h2><p><strong>Material:</strong> ${e(data.identity)}</p><p>${e(data.scope)}</p><p class="specification-source"><strong>Source:</strong> ${e(data.issuer)} · ${e(data.version)} · <a href="${e(data.sourceUrl)}" target="_blank" rel="noopener noreferrer">${e(data.sourceLabel)}</a></p><p id="specification-scope">${e(data.acceptance)}</p><p class="table-scroll-hint" id="specification-scroll">On narrow screens, scroll within the table if needed.</p><div class="parameter-table-wrap" tabindex="0" role="region" aria-label="${e(product.name)} reference specification table" aria-describedby="specification-scope specification-scroll"><table class="parameter-table specification-table"><caption>${e(data.title)} — selected fields for ${e(product.abbr)}</caption><thead><tr><th scope="col">Parameter / stated test conditions</th><th scope="col">${data.kind==='standard-reference'?'Reference requirement':'Reference specification'}</th><th scope="col">Unit</th></tr></thead><tbody>${data.rows.map(row=>`<tr><th scope="row">${e(row[0])}</th><td>${e(row[1])}</td><td>${e(row[2])}</td></tr>`).join('')}</tbody></table></div><p class="specification-methods">${e(data.conditions)}</p><a class="button button--navy" data-context-inquiry href="${e(url)}">Request specification <span aria-hidden="true">↗</span></a></div></section>`;
+}
