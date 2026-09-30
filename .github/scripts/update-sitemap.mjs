@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// The publish source is /docs on main. Derive URLs from its real HTML files.
-const root = path.resolve(process.argv[2] || 'docs');
+// Match Bespring's branch publishing: derive URLs from public HTML at repo root.
+const root = path.resolve(process.argv[2] || '.');
 const origin = 'https://ingredientcore.com/';
 if (!fs.statSync(root).isDirectory()) throw new Error('Missing static site directory: ' + root);
 const pages = [];
 function walk(directory) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const file = path.join(directory, entry.name);
-    if (entry.isDirectory()) walk(file);
+    if (entry.isDirectory() && !entry.name.startsWith('.') && !['docs','建站过程','content','internal-tools'].includes(entry.name)) walk(file);
     else if (entry.isFile() && entry.name.endsWith('.html')) pages.push(path.relative(root, file).replaceAll(path.sep, '/'));
   }
 }
