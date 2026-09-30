@@ -20,7 +20,7 @@
 
 ## 后续更新
 
-直接修改 `docs/` 中已有 HTML、CSS、JS 或图片后，用 GitHub Desktop Commit、Push 即可发布对应更改。新增、删除网页或改变正式域名时，应重新生成 `docs/sitemap.xml`、canonical 等 SEO 文件；GitHub 的分支直发不会自动计算网站地图。
+直接修改 `docs/` 中已有 HTML、CSS、JS 或图片后，用 GitHub Desktop Commit、Push 即可发布对应更改。新增或删除 docs 内网页并推送后，独立的 SEO 工作流会自动扫描公开 HTML、更新 docs/sitemap.xml 并请求 Pages 发布更新。它不会重新构建网页，也不会伪造 lastmod 日期。正式域名变化或新页面需要 canonical 时，仍须更新相应页面元信息。
 
 如果修改的是 `content/` 数据和模板，先在本地运行生成器再更新 `docs/`：
 
@@ -30,3 +30,7 @@
     node check.mjs .publish
 
 随后用 `.publish/` 的内容更新 `docs/`，再提交、推送。不要提交 `.publish/` 或 `建站过程/`。当前 60 个公开文件和 49 个 sitemap URL 已通过检查。
+
+## 网站地图自动更新
+
+此做法参考 Bespring：.github/workflows/sitemap.yml 在 docs 页面变化时执行 .github/scripts/update-sitemap.mjs，只改动确实变化的网站地图。Pages 仍从 main /docs 直接发布，不使用旧的构建/部署工作流。GitHub 会出现一个短暂的“Update sitemap”检查任务；无需手动运行。

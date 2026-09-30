@@ -1,0 +1,66 @@
+name: Update sitemap
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/scripts/update-sitemap.mjs'
+      - '.github/workflows/sitemap.yml'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: ingredientcore-sitemap
+  cancel-in-progress: false
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate sitemap from published HTML
+        run: node .github/scripts/update-sitemap.mjs docs
+      - name: Commit changed sitemap
+        id: update
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/sitemap.xml; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'Sitemap is current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/sitemap.xml
+          git commit -m 'Update sitemap automatically [skip ci]'
+          git push origin HEAD:main
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+      - name: Publish changed sitemap from branch
+        if: steps.update.outputs.changed == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -sS -o /tmp/ingredientcore-pages-response.json -w '%{http_code}' \
+              -X POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/builds")
+            if [ "$code" = '201' ] || [ "$code" = '202' ]; then
+              echo 'GitHub Pages rebuild requested.'
+              exit 0
+            fi
+            if [ "$code" = '409' ]; then sleep 10; continue; fi
+            echo "Pages rebuild failed: HTTP $code. Confirm Settings → Pages → Deploy from a branch → main /docs."
+            cat /tmp/ingredientcore-pages-response.json
+            exit 1
+          done
+          echo 'Pages remained busy; retry the workflow after the current deployment.'
+          exit 1
