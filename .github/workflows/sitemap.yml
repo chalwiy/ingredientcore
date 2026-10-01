@@ -4,23 +4,38 @@ on:
     branches: [main]
     paths:
       - '**/*.html'
-      - '.github/scripts/update-sitemap.mjs'
-      - '.github/workflows/sitemap.yml'
+      - '.github/scripts/*.mjs'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - 'CNAME'
+      - '.github/workflows/*.yml'
   workflow_dispatch:
 permissions: {}
-concurrency:
-  group: ingredientcore-sitemap
-  cancel-in-progress: false
 jobs:
   sitemap:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pages: write
+    outputs:
+      before: ${{ steps.context.outputs.before }}
+      after: ${{ steps.context.outputs.after }}
     steps:
+      - name: Record original push range
+        id: context
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          echo "before=$BEFORE" >> "$GITHUB_OUTPUT"
+          echo "after=$AFTER" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Generate sitemap from published HTML
         run: node .github/scripts/update-sitemap.mjs .
       - name: Commit changed sitemap
@@ -28,7 +43,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- sitemap.xml; then
+          if [ -f sitemap.xml ] && git ls-files --error-unmatch sitemap.xml >/dev/null 2>&1 && git diff --quiet -- sitemap.xml; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             echo 'Sitemap is current.'
             exit 0
@@ -37,7 +52,17 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add sitemap.xml
           git commit -m 'Update sitemap automatically [skip ci]'
-          git push origin HEAD:main
+          pushed=false
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then pushed=true; break; fi
+            git fetch origin main
+            git reset --hard origin/main
+            node .github/scripts/update-sitemap.mjs .
+            git add sitemap.xml
+            if git diff --cached --quiet; then pushed=true; break; fi
+            git commit -m 'Update sitemap automatically [skip ci]'
+          done
+          if [ "$pushed" != true ]; then echo 'Could not update main after concurrent pushes'; exit 1; fi
           echo 'changed=true' >> "$GITHUB_OUTPUT"
       - name: Publish changed sitemap from branch
         if: steps.update.outputs.changed == 'true'
@@ -64,3 +89,12 @@ jobs:
           done
           echo 'Pages remained busy; retry the workflow after the current deployment.'
           exit 1
+  indexnow:
+    needs: sitemap
+    permissions:
+      contents: read
+    uses: ./.github/workflows/indexnow.yml
+    with:
+      before: ${{ needs.sitemap.outputs.before }}
+      after: ${{ needs.sitemap.outputs.after }}
+      full: ${{ github.event_name == 'workflow_dispatch' }}

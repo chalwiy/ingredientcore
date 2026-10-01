@@ -1,31 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-// Match Bespring's branch publishing: derive URLs from public HTML at repo root.
-const root = path.resolve(process.argv[2] || '.');
-const origin = 'https://www.ingredientcore.com/';
-if (!fs.statSync(root).isDirectory()) throw new Error('Missing static site directory: ' + root);
-const pages = [];
-function walk(directory) {
-  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-    const file = path.join(directory, entry.name);
-    if (entry.isDirectory() && !entry.name.startsWith('.') && !['docs','建站过程','content','internal-tools'].includes(entry.name)) walk(file);
-    else if (entry.isFile() && entry.name.endsWith('.html')) pages.push(path.relative(root, file).replaceAll(path.sep, '/'));
+import {publicPath,noindex,pageURL} from './site-urls.mjs';
+const root=path.resolve(process.argv[2] || '.');
+const urls=[];
+function walk(dir) {
+  for(const e of fs.readdirSync(dir,{withFileTypes:true})) {
+    const p=path.join(dir,e.name), rel=path.relative(root,p).split(path.sep).join('/');
+    if(e.isDirectory() && publicPath(rel+'/probe.html')) walk(p);
+    else if(e.isFile() && publicPath(rel)) {
+      const html=fs.readFileSync(p,'utf8');
+      if(noindex(html)) continue;
+      const url=pageURL(rel);
+      const tags=[...html.matchAll(/<link\b[^>]*>/gi)].map(x=>x[0]).filter(x=>/\brel\s*=\s*["']canonical["']/i.test(x));
+      if(tags.length>1) throw Error(rel+': duplicate canonical');
+      const canonical=tags[0]?.match(/\bhref\s*=\s*["']([^"']+)["']/i)?.[1];
+      if(canonical && canonical!==url) throw Error(rel+': canonical mismatch '+canonical);
+      urls.push(url);
+    }
   }
 }
 walk(root);
-const escapeXml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-const urls = [];
-for (const page of pages.sort()) {
-  if (page === '404.html') continue;
-  const html = fs.readFileSync(path.join(root, page), 'utf8');
-  if (/<meta\s+name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html)) continue;
-  const url = new URL(page, origin).href;
-  const canonical = html.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i)?.[1];
-  if (canonical && canonical !== url) throw new Error(`${page}: canonical ${canonical} does not match ${url}`);
-  urls.push(url);
-}
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(url => `  <url><loc>${escapeXml(url)}</loc></url>`).join('\n')}\n</urlset>\n`;
-const target = path.join(root, 'sitemap.xml');
-if (!fs.existsSync(target) || fs.readFileSync(target, 'utf8') !== sitemap) fs.writeFileSync(target, sitemap);
-console.log(`Sitemap checked: ${urls.length} public HTML pages.`);
+const xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls.sort().map(u=>'  <url><loc>'+u.replaceAll('&','&amp;')+'</loc></url>').join('\n')+'\n</urlset>\n';
+fs.writeFileSync(path.join(root,'sitemap.xml'),xml);
+console.log('Sitemap: '+urls.length+' public pages');
