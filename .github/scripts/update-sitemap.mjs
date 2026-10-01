@@ -3,7 +3,7 @@ import path from 'node:path';
 
 // Match Bespring's branch publishing: derive URLs from public HTML at repo root.
 const root = path.resolve(process.argv[2] || '.');
-const origin = 'https://ingredientcore.com/';
+const origin = 'https://www.ingredientcore.com/';
 if (!fs.statSync(root).isDirectory()) throw new Error('Missing static site directory: ' + root);
 const pages = [];
 function walk(directory) {
