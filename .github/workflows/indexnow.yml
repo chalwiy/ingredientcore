@@ -14,9 +14,6 @@ on:
         default: false
 permissions:
   contents: read
-concurrency:
-  group: ingredientcore-indexnow
-  cancel-in-progress: false
 jobs:
   indexnow:
     runs-on: ubuntu-latest
