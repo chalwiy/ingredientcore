@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://ingredientcore.com/sitemap.xml
+Sitemap: https://www.ingredientcore.com/sitemap.xml
