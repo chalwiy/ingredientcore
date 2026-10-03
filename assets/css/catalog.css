@@ -1,0 +1,63 @@
+/* Directory-only layout; shared product and company pages keep their styles. */
+.catalog-page .page-hero{padding-block:58px 62px}
+.catalog-page .page-hero h1{font-size:clamp(42px,5.4vw,70px);max-width:900px}
+.catalog-page .page-hero p{max-width:780px}
+.catalog-hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:25px}
+.catalog-page .page-section{padding-block:60px}
+.catalog-route-head{display:flex;justify-content:space-between;gap:30px;align-items:center;margin-bottom:25px}
+.catalog-route-head h2{margin:0;font-size:32px;color:var(--navy);letter-spacing:-.035em}
+.catalog-route-head p{margin:0;max-width:48ch;color:#4d6265;font-size:14px}
+.catalog-routes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.catalog-route{display:flex;flex-direction:column;gap:13px;padding:22px 18px;border:1px solid #c3d4cd;background:#fff;color:var(--navy)}
+.catalog-route:hover{border-color:var(--teal);background:#eaf3ef}
+.catalog-route strong{font-size:19px;line-height:1.3}
+.catalog-route span{font-size:13px;color:#4d6265;line-height:1.6}
+.catalog-route .catalog-route-count{margin-top:auto;padding-top:8px;font-size:11px;font-weight:750;color:var(--teal)}
+.catalog-page .catalog-intro__grid{grid-template-columns:.8fr 1.2fr;gap:55px}
+.catalog-page .catalog-intro h2{font-size:clamp(30px,3.7vw,48px);margin-top:16px}
+.catalog-page .catalog-intro__grid>div{min-width:0}
+.catalog-page .catalog-intro__grid p{color:#4d6265}
+.catalog-page .catalog-intro{padding-top:20px}
+.catalog-controls{display:grid;grid-template-columns:1.2fr 1fr;gap:15px;align-items:end}
+.catalog-input-label{display:block;font-size:14px;font-weight:650;margin-bottom:8px;color:var(--navy)}
+.catalog-page .catalog-filter{margin:0;gap:8px;font-size:14px}
+.catalog-page .catalog-filter select{min-height:55px;border-radius:0}
+.catalog-page .catalog-search-help{margin-bottom:8px}
+.catalog-page .catalog-search__status{font-size:14px;line-height:1.6;color:#465e63;min-height:45px}
+.catalog-page .family-links{margin-block:26px 0}
+.catalog-page .family-links a{min-height:44px;display:inline-flex;align-items:center;font-size:13px}
+.catalog-list{padding-top:0!important}
+.catalog-core-section{margin-bottom:60px;scroll-margin-top:110px}
+.catalog-core-head{border-top:2px solid var(--teal);padding-top:25px;margin-bottom:25px}
+.catalog-core-head h2{font-size:clamp(30px,3.4vw,43px);color:var(--navy);letter-spacing:-.04em;margin:8px 0 13px}
+.catalog-core-head>p{max-width:78ch;color:#4d6265;font-size:15px;margin:0}
+.catalog-group-actions{display:flex;flex-wrap:wrap;gap:10px 23px;margin-top:15px}
+.catalog-group-actions a{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--teal);text-decoration:underline;text-underline-offset:4px}
+.catalog-page .catalog-family{margin-top:28px}
+.catalog-page .catalog-family__head h3{margin:0 0 9px;color:var(--navy);font-size:24px;letter-spacing:-.03em}
+.catalog-page .catalog-family__head{align-items:start}
+.catalog-page .catalog-family__head>span{white-space:nowrap}
+.catalog-page .catalog-card{min-height:250px;transition:box-shadow .2s,border-color .2s}
+.catalog-page .catalog-card:hover{transform:none}
+.catalog-page .catalog-card h3,.catalog-page .catalog-card h4{margin:23px 0 10px;font-size:21px;line-height:1.3;color:var(--navy);letter-spacing:-.025em;overflow-wrap:anywhere}
+.catalog-page .catalog-card h3 a:hover,.catalog-page .catalog-card h4 a:hover{text-decoration:underline}
+.catalog-page .catalog-card__top{gap:15px;align-items:center}
+.catalog-page .catalog-card__top span:last-child{font-size:11px;font-weight:700}
+.catalog-card-alias{margin-top:10px!important;font-size:12px!important;color:#5c7071!important}
+.catalog-card-actions{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:auto;padding-top:16px}
+.catalog-card-actions a{display:inline-flex;align-items:center;min-height:44px;color:var(--navy);font-size:12px;font-weight:750;text-decoration:underline;text-underline-offset:4px}
+.catalog-page .catalog-empty{margin-bottom:40px}
+.catalog-empty h2{margin:0 0 10px;font-size:25px}
+.catalog-empty button{margin-right:15px}
+.catalog-request{background:#e5eeea;border:1px solid #bed0c6;padding:28px;margin-top:35px}
+.catalog-request h2{font-size:30px;color:var(--navy);margin:0 0 14px}
+.catalog-request p{max-width:80ch;color:#4d6265;font-size:15px}
+.catalog-request-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.catalog-request-actions .button{white-space:normal}
+.catalog-page [tabindex="-1"]:focus-visible,.catalog-page a:focus-visible,.catalog-page button:focus-visible{outline:3px solid #986631;outline-offset:4px}
+.catalog-anchor{display:block;scroll-margin-top:110px}
+@media(max-width:1100px){.catalog-routes{grid-template-columns:repeat(3,minmax(0,1fr))}.catalog-controls{grid-template-columns:1fr}.catalog-page .catalog-intro__grid{gap:35px}}
+@media(max-width:750px){.catalog-page .page-hero{padding-block:38px 45px}.catalog-route-head{display:block}.catalog-route-head p{margin-top:14px}.catalog-routes{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-route{padding:18px 15px}.catalog-page .page-section{padding-block:38px}.catalog-page .catalog-intro__grid{grid-template-columns:1fr;gap:24px}.catalog-page .catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-core-section{margin-bottom:38px}.catalog-request{padding:22px}}
+@media(max-width:480px){.catalog-page .catalog-grid{grid-template-columns:1fr}.catalog-page .catalog-family__head{gap:15px}.catalog-page .catalog-family__head h3{font-size:22px}.catalog-page .catalog-card{min-height:220px}.catalog-route strong{font-size:17px}.catalog-request{padding:20px}.catalog-hero-actions .button{width:100%;justify-content:center}.catalog-request-actions .button{width:100%;justify-content:center}}
+/* Keep mobile contact shortcuts in the page flow so they do not cover text or actions. */
+@media(max-width:600px){.catalog-page .floating-contact{position:static;flex-direction:row;justify-content:center;padding:18px;background:var(--cream);gap:12px}.catalog-page .floating-contact a{width:72px;min-height:58px}}

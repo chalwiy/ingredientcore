@@ -1,0 +1,39 @@
+/* Homepage-only additions; interior pages retain their existing presentation. */
+.home-page .hero h1{font-size:clamp(42px,4.5vw,64px);line-height:1.08}
+.home-page .hero__lead{max-width:600px}
+.home-page .hero__bottom{font-size:10px}
+.home-page .home-family-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.home-page .home-family{grid-column:span 2;padding:28px;background:#e9efeb;border:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+.home-page .home-family:first-child{grid-column:span 3;background:var(--navy);color:#fff}
+.home-page .home-family:nth-child(2){grid-column:span 3}
+.home-page .home-family h3{font-size:25px;letter-spacing:-.03em;margin:20px 0 12px;color:var(--navy)}
+.home-page .home-family:first-child h3,.home-page .home-family:first-child .micro-label{color:#fff}
+.home-page .home-family p{font-size:15px;line-height:1.7;color:var(--muted);margin:0 0 22px}
+.home-page .home-family:first-child p{color:#d4e6e1}
+.home-page .home-family__examples{font-size:12px;line-height:1.7;color:var(--teal);font-weight:700;margin-top:auto;padding-top:16px;border-top:1px solid #cbd5d0}
+.home-page .home-family:first-child .home-family__examples{color:#cce8de;border-color:#52717b}
+.home-page .home-family__links{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:12px}
+.home-page .home-family__links a{display:inline-flex;gap:8px;align-items:center;min-height:44px;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.home-page .home-family:first-child :focus-visible{outline-color:var(--focus-light)}
+.home-page .home-specs{background:#e9efeb}
+.home-page .home-table-hint,.home-page .home-spec-note{font-size:13px;color:var(--muted);line-height:1.7}
+.home-page .home-table-wrap{overflow-x:auto;border:1px solid #bccbc4;background:var(--cream)}
+.home-page .home-table{width:100%;min-width:720px;border-collapse:collapse;font-size:14px;line-height:1.6}
+.home-page .home-table caption{text-align:left;padding:20px;font-weight:700;color:var(--navy)}
+.home-page .home-table th,.home-page .home-table td{text-align:left;vertical-align:top;padding:18px 20px;border-top:1px solid var(--line)}
+.home-page .home-table thead th{background:var(--navy);color:#fff}
+.home-page .home-table a{display:inline-block;color:var(--teal);text-decoration:underline;text-underline-offset:3px;padding-block:4px}
+.home-page .home-cmc-note{display:grid;grid-template-columns:1fr 1.6fr;gap:12px 32px;padding:26px 0;margin-top:12px;border-bottom:1px solid #cbd5d0}
+.home-page .home-cmc-note strong{font-size:20px;color:var(--navy)}
+.home-page .home-cmc-note p{font-size:14px;line-height:1.7;margin:0;color:var(--muted)}
+.home-page .home-cmc-note a{grid-column:2;color:var(--teal);font-size:14px;font-weight:700}
+.home-page .home-faq{background:var(--cream)}
+.home-page .home-faq-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
+.home-page .home-faq details{padding:20px 0;border-top:1px solid var(--line);min-width:0}
+.home-page .home-faq summary{cursor:pointer;color:var(--navy);font-size:17px;font-weight:650;line-height:1.6;min-height:44px;padding-right:8px}
+.home-page .home-faq details p{font-size:15px;line-height:1.75;color:var(--muted);margin:16px 0 0}
+.home-page .home-faq details a{color:var(--teal);text-decoration:underline;text-underline-offset:3px}
+.home-page .hero h1,.home-page .home-family h3,.home-page .home-faq summary{overflow-wrap:anywhere}
+@media(max-width:1050px){.home-page .home-family{grid-column:span 3}.home-page .home-family:last-child{grid-column:span 6}.home-page .hero h1{font-size:clamp(42px,7vw,64px)}}
+@media(max-width:600px){.home-page .home-family-grid,.home-page .home-faq-grid,.home-page .home-cmc-note{grid-template-columns:1fr}.home-page .home-family,.home-page .home-family:first-child,.home-page .home-family:nth-child(2),.home-page .home-family:last-child{grid-column:auto}.home-page .home-family{padding:24px}.home-page .home-cmc-note a{grid-column:auto}.home-page .hero h1{font-size:clamp(38px,10vw,54px)}.home-page .hero__bottom span:first-child{max-width:calc(100% - 36px);font-size:9px}}
+@media print{.home-page .home-faq details:not([open])>p{display:block}.home-page .home-table-wrap{overflow:visible}.home-page .home-table{min-width:0}}

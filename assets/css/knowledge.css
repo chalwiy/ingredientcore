@@ -1,0 +1,28 @@
+/* Scoped to the knowledge directory and the three revised procurement guides. */
+.knowledge-document{scroll-behavior:auto;scroll-padding-top:0}
+.knowledge-page .page-hero h1{max-width:1050px;font-size:clamp(33px,4.5vw,62px);line-height:1.12}
+.knowledge-page .knowledge-intro h2{color:var(--navy);font-size:clamp(28px,3.2vw,43px);line-height:1.2;margin:18px 0}
+.knowledge-page .guide-start{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:30px}
+.knowledge-page .guide-start a{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--line);color:var(--navy)}
+.knowledge-page .guide-start strong{font-size:18px}.knowledge-page .guide-start span{font-size:14px;color:var(--muted)}
+.knowledge-page .guide-start a:hover{background:#e7f0eb}
+.knowledge-page .article-layout{grid-template-columns:minmax(0,1fr) 260px;gap:50px}
+.knowledge-page .article-content{max-width:850px}
+.knowledge-page .article-lead>p:not(.content-updated){font-size:clamp(18px,2vw,23px);line-height:1.65}
+.knowledge-page .guide-toc{margin-top:25px;background:#e7f0eb;padding:16px 20px}
+.knowledge-page .guide-toc summary{cursor:pointer;font-size:15px;font-weight:750;color:var(--navy)}
+.knowledge-page .guide-toc nav{display:grid;gap:12px;margin-top:16px;font-size:14px}
+.knowledge-page .guide-toc a,.knowledge-page .article-section a{color:var(--teal);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.knowledge-page .article-section,.knowledge-page .article-sources{scroll-margin-top:110px}
+.knowledge-page .article-section h2{font-size:clamp(26px,3vw,33px)}
+.knowledge-page .technical-table{min-width:650px}
+.knowledge-page .technical-table caption{padding:15px 18px;background:#e5efeb;text-align:left;font-weight:750;color:var(--navy)}
+.knowledge-page .technical-table th,.knowledge-page .technical-table td{line-height:1.65;vertical-align:top}
+.knowledge-page .guide-example{margin:25px 0;padding:22px 25px;background:#eef3ef;border-left:3px solid var(--teal)}
+.knowledge-page .guide-example p{font-size:15px}
+.knowledge-page .guide-actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+.knowledge-page .article-section .button{color:#fff;text-decoration:none;font-size:13px}
+.knowledge-page .article-sidebar{max-height:calc(100vh - 130px);overflow:auto}
+@media(max-width:850px){.knowledge-page .article-layout{grid-template-columns:1fr;gap:32px}.knowledge-page .article-sidebar{max-height:none;overflow:visible}.knowledge-page .guide-start{grid-template-columns:1fr}.knowledge-page .page-hero h1 em{display:block}}
+@media(max-width:600px){.knowledge-page .guide-example{padding:18px;margin-inline:0}.knowledge-page .guide-actions{flex-direction:column}.knowledge-page .guide-actions .button{width:100%}.knowledge-page .floating-contact{position:static;display:flex;flex-direction:row;justify-content:center;padding:20px;background:var(--cream);transform:none}.knowledge-page .article-boundary{padding:20px}}
+@media(max-height:700px){.knowledge-page .article-sidebar{position:static;max-height:none;overflow:visible}}
