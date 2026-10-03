@@ -8,4 +8,4 @@ export function noindex(html) {
   return [...html.matchAll(/<meta\b[^>]*>/gi)].some(([tag]) =>
     /\bname\s*=\s*["'](?:robots|googlebot|bingbot)["']/i.test(tag) && /\bcontent\s*=\s*["'][^"']*\bnoindex\b/i.test(tag));
 }
-export function pageURL(p) { return new URL(p, ORIGIN).href; }
+export function pageURL(p) { return new URL(p === 'index.html' ? '' : p, ORIGIN).href; }

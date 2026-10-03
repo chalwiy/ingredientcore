@@ -18,13 +18,14 @@ jobs:
   indexnow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
+          package-manager-cache: false
       - name: Generate current sitemap locally
         run: node .github/scripts/update-sitemap.mjs .
       - name: Validate key and submit URLs
