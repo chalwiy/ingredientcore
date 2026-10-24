@@ -9,3 +9,9 @@
 本地 `建站过程/` 存放构建与测试源码及历史记录，已通过 `.gitignore` 排除。网站批量调整可使用其中源码重新生成文件，再将经过检查的静态输出复制到根目录；直接编辑现有 HTML、CSS、JS 或图片则提交相应文件即可。新增页面请添加准确标题、描述和 canonical；网站地图会自动纳入可索引的 HTML。删除页面后，网站地图会自动去掉相应 URL。
 
 上线检查：`https://www.ingredientcore.com/`、`https://www.ingredientcore.com/sitemap.xml`、`https://www.ingredientcore.com/robots.txt`；Pages 中启用 Enforce HTTPS 并检查裸域名到 `www` 的跳转。首次 DNS 与证书生效需要在 GitHub Pages 设置中确认。
+
+## IndexNow
+
+The existing root text key is shared by the local project and the published site; keep its filename and content unchanged. Normal HTML pushes submit changed public URLs. Changes to the IndexNow script, URL configuration, key, CNAME or IndexNow workflow also submit the current automatically generated sitemap. No manual sitemap edit is needed.
+
+Check Actions → Update sitemap → indexnow / indexnow → Validate key and submit URLs. The log must show a positive candidate count and an HTTP response. HTTP 200 means received; HTTP 202 means received with key validation pending. Neither guarantees crawling or indexing. Manual full submission is available through Actions → Submit URLs to IndexNow → Run workflow.

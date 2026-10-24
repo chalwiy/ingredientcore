@@ -3,19 +3,28 @@ import {execFileSync} from 'node:child_process';
 import {ORIGIN,KEY,publicPath,noindex,pageURL} from './site-urls.mjs';
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8'});
 const urls=new Set();
+function addSitemap() {
+  for(const m of fs.readFileSync('sitemap.xml','utf8').matchAll(/<loc>([^<]+)<\/loc>/g)) urls.add(m[1].replaceAll('&amp;','&'));
+}
+const configPaths=new Set(['CNAME',KEY+'.txt','.github/scripts/site-urls.mjs','.github/scripts/indexnow.mjs','.github/workflows/indexnow.yml']);
 function add(ref,p) {
   if(!publicPath(p)) return;
   const html=git('show',ref+':'+p);
   if(!noindex(html)) urls.add(pageURL(p));
 }
 if(process.env.FULL==='true') {
-  for(const m of fs.readFileSync('sitemap.xml','utf8').matchAll(/<loc>([^<]+)<\/loc>/g)) urls.add(m[1].replaceAll('&amp;','&'));
+  addSitemap();
 } else {
   const {BEFORE,AFTER}=process.env;
   if(!/^[0-9a-f]{40}$/.test(BEFORE||'') || !/^[0-9a-f]{40}$/.test(AFTER||'')) throw Error('Missing valid push range');
   if(/^0+$/.test(BEFORE)) {
     for(const p of git('ls-tree','-r','--name-only',AFTER).trim().split('\n')) add(AFTER,p);
   } else {
+    const changedPaths=git('diff','--name-only','-z',BEFORE,AFTER).split('\0');
+    if(changedPaths.some(p=>configPaths.has(p))) {
+      console.log('IndexNow configuration changed: submit current sitemap.');
+      addSitemap();
+    }
     const parts=git('diff','--name-status','-z','--find-renames',BEFORE,AFTER).split('\0');
     for(let i=0;i<parts.length-1;) {
       const status=parts[i++], p=parts[i++];
@@ -35,8 +44,13 @@ if(fs.readFileSync(KEY+'.txt','utf8').trim()!==KEY) throw Error('Local key misma
 const keyLocation=ORIGIN+KEY+'.txt';
 let verified=false;
 for(let attempt=0;attempt<6;attempt++) {
-  const r=await fetch(keyLocation,{redirect:'error',signal:AbortSignal.timeout(15000)});
-  if(r.status===200 && (await r.text()).trim()===KEY) {verified=true;break;}
+  try {
+    const r=await fetch(keyLocation,{redirect:'error',signal:AbortSignal.timeout(15000)});
+    if(r.status===200 && (await r.text()).trim()===KEY) {verified=true;break;}
+    console.warn('Key check attempt '+(attempt+1)+': HTTP '+r.status);
+  } catch(error) {
+    console.warn('Key check attempt '+(attempt+1)+': '+error.message);
+  }
   if(attempt<5) await new Promise(r=>setTimeout(r,10000));
 }
 if(!verified) throw Error('Public IndexNow key is unavailable or incorrect: '+keyLocation);
@@ -46,3 +60,6 @@ for(let i=0;i<urlList.length;i+=10000) {
   if(![200,202].includes(r.status)) throw Error('IndexNow HTTP '+r.status+': '+body);
   console.log('IndexNow accepted: HTTP '+r.status);
 }
+
+console.log('IndexNow request completed for '+urlList.length+' URLs; acceptance does not guarantee indexing.');
+if(process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## IndexNow\n\nSubmitted '+urlList.length+' URLs for '+new URL(ORIGIN).hostname+'. See logs for HTTP status. HTTP 202 means key validation is pending; acceptance does not guarantee indexing.\n');

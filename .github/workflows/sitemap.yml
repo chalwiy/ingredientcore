@@ -8,6 +8,7 @@ on:
       - 'sitemap.xml'
       - 'robots.txt'
       - 'CNAME'
+      - '7b987908745143be9c03ef14fe4cb3de.txt'
       - '.github/workflows/*.yml'
   workflow_dispatch:
 permissions: {}
