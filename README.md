@@ -1,17 +1,19 @@
-# IngredientCore 静态网站
+# IngredientCore 静态网站维护
 
-本仓库与 Bespring 一样，从 main 分支根目录直接发布静态 HTML。GitHub Pages 设置：Settings → Pages → Build and deployment → **Deploy from a branch** → **main** → **/(root)** → Save。Custom domain 保持 `www.ingredientcore.com`。
+发布网站时，将“上线文件”内的全部内容放在 GitHub 仓库根目录，包括隐藏的 `.github` 文件夹；不要将外层项目、本地模型或建站过程上传到发布仓库。
 
-根目录的 `index.html`、各页面目录、`assets/`、`404.html`、`sitemap.xml`、`robots.txt`、`CNAME` 和 `.nojekyll` 是发布文件。更新这些文件并用 GitHub Desktop 推送后，GitHub Pages 自动发布。
+## 一次性发布设置（本次改造后需要）
 
-`.github/workflows/sitemap.yml` 参照 Bespring 的方法，在网页变动后扫描根目录 HTML，自动更新 `sitemap.xml`。只有网站地图内容变化时才提交，并请求 Pages 重建。工作流不构建网站，不使用旧的自定义发布程序，完成后调用 IndexNow：普通 push 只提交原始 before/after 范围内新增、修改、删除及重命名页面；手动运行可提交完整 sitemap。它不把每次运行日期写作页面更新时间。
+GitHub 仓库 Settings → Pages → Build and deployment → Source 选择 **GitHub Actions**，保留自定义域名 `www.ingredientcore.com` 和 HTTPS 设置。原来的 Deploy from a branch 不再作为本流程发布来源。若不切换，会继续走旧分支发布，不能保证线上收到生成后的地图。
 
-本地 `建站过程/` 存放构建与测试源码及历史记录，已通过 `.gitignore` 排除。网站批量调整可使用其中源码重新生成文件，再将经过检查的静态输出复制到根目录；直接编辑现有 HTML、CSS、JS 或图片则提交相应文件即可。新增页面请添加准确标题、描述和 canonical；网站地图会自动纳入可索引的 HTML。删除页面后，网站地图会自动去掉相应 URL。
+用 GitHub Desktop 提交、推送到 main 后，Actions → Update sitemap and deploy Pages：先扫描实际 HTML 生成 sitemap.xml，再将网站和地图打包、发布。无需机器人回写提交，避免重复触发和生成、发布竞态。IndexNow 在发布成功后运行，其失败不撤回已经成功的网站发布。可在 Actions 手动运行本流程。
 
-上线检查：`https://www.ingredientcore.com/`、`https://www.ingredientcore.com/sitemap.xml`、`https://www.ingredientcore.com/robots.txt`；Pages 中启用 Enforce HTTPS 并检查裸域名到 `www` 的跳转。首次 DNS 与证书生效需要在 GitHub Pages 设置中确认。
+网站只保留根目录 sitemap.xml（urlset），包含英文和全部已存在的语言页面。robots.txt 只声明这一地址。当前 637 条，今后按实际页面动态扫描。保留页面中的 canonical、hreflang 和 x-default；不虚构 lastmod。目录首页统一使用 `/th/` 等形式，不能写成 `/th/index.html`。
 
-## IndexNow
+新增 HTML 必须有准确的本站 canonical；删除、重命名及 noindex 页面会在下一次推送后重新计算。生成器不会提交 404、验证页、隐藏目录、模型、内部工具及 noindex 页面；canonical 错误会中止发布，避免发布错误地图。
 
-The existing root text key is shared by the local project and the published site; keep its filename and content unchanged. Normal HTML pushes submit changed public URLs. Changes to the IndexNow script, URL configuration, key, CNAME or IndexNow workflow also submit the current automatically generated sitemap. No manual sitemap edit is needed.
+本地更新地图：在仓库根目录运行 `node .github/scripts/update-sitemap.mjs .`。上传后的检查地址为 https://www.ingredientcore.com/sitemap.xml 和 https://www.ingredientcore.com/robots.txt 。检查 Actions 的 build/deploy 是否成功，不要只凭 Desktop 推送成功判断发布完成。
 
-Check Actions → Update sitemap → indexnow / indexnow → Validate key and submit URLs. The log must show a positive candidate count and an HTTP response. HTTP 200 means received; HTTP 202 means received with key validation pending. Neither guarantees crawling or indexing. Manual full submission is available through Actions → Submit URLs to IndexNow → Run workflow.
+若任务失败：确认 main 是发布分支、`.github/workflows` 在仓库根目录、Actions 已启用、Pages Source 为 GitHub Actions；若环境保护或组织权限限制发布，按 Actions 日志处理。无需添加个人访问令牌。
+
+IndexNow 接收请求不代表已抓取或收录。保留现有密钥及搜索引擎验证文件。
