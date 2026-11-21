@@ -6,7 +6,7 @@
   const status = document.querySelector('[data-catalog-status]');
   const empty = document.querySelector('[data-catalog-empty]');
   const reset = document.querySelector('[data-catalog-reset]');
-  const normalize = value => String(value).toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+  const normalize = value => String(value).normalize('NFKC').toLowerCase().replace(/[\u0640\u064B-\u065F\u0670]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const matchesFamily = card => !filter.value || card.dataset.core === filter.value || card.dataset.family === filter.value;
   function update() {
     const query = normalize(search.value);
@@ -28,7 +28,7 @@
       count.textContent = String(total);
     });
     const category = filter.selectedOptions[0].textContent;
-    status.textContent = "النتائج" + ': ' + String(core + guides);
+    status.textContent = [filter.value ? category : '', 'عدد النتائج: ' + (core + guides)].filter(Boolean).join(' · ');
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

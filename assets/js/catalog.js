@@ -28,7 +28,8 @@
       count.textContent = `${total} ${total === 1 ? 'entry' : 'entries'}`;
     });
     const category = filter.selectedOptions[0].textContent;
-    status.textContent = `${core + guides} results: ${core} core product ${core === 1 ? 'entry' : 'entries'} and ${guides} selection ${guides === 1 ? 'guide' : 'guides'}${query ? ` for “${search.value.trim()}”` : ''}${filter.value ? ` in ${category}` : ''}.`;
+    const total = core + guides;
+    status.textContent = `${total} ${total === 1 ? 'result' : 'results'}: ${core} core product ${core === 1 ? 'entry' : 'entries'} and ${guides} selection ${guides === 1 ? 'guide' : 'guides'}${query ? ` for “${search.value.trim()}”` : ''}${filter.value ? ` in ${category}` : ''}.`;
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

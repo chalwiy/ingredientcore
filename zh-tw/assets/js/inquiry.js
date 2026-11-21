@@ -1,5 +1,5 @@
 (() => {
-  "使用嚴格";
+  'use strict';
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "對於報價,請新增等級或目標規格、估計數量和目的地市場(如果已知 ) 。",
-    'Sample availability question': "免費提供樣品,請註明產品或等級、試驗目的和目的地,銷售人員將討論數量和運輸安排。",
-    'Product document request': "請說明您需要的產品或等級和記錄。 對於證書,請包括目標市場和審查目的。",
-    'Application / selection question': "說明食品、工藝和目標功能，並增加相關試驗條件或規格要求。"
+    'Product / quotation inquiry': "索取報價時，請提供等級或目標規格、預計數量和目的地市場。",
+    'Sample availability question': "申請免費樣品時，請載明產品或等級、試驗用途和目的地。業務會確認樣品數量與寄送安排。",
+    'Product document request': "請載明產品或等級及所需資料。索取證書時，請一併提供目的地市場及審查用途。",
+    'Application / selection question': "請說明食品類型、製程及目標功能，並提供已知的試驗條件或規格要求。"
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "產品或目標功能", name: 'Name', email: "商業電子郵件", company: 'Company', market: "目的地市場", application: "食品應用", goal: "目標函式", volume: "估計數量和時間", specification: "目標等級或規格", documents: "所需檔案或證書", purpose: "審查或抽樣試驗的目的", details: "其他問題", context: "參考頁" };
+  const labels = { ingredient: "產品或目標功能", name: '姓名', email: "公司電子郵件", company: '公司', market: "目的地市場", application: "食品應用", goal: "目標功能", volume: "預計採購量和所需時間", specification: "目標等級或規格", documents: "所需文件或證書", purpose: "審查文件或樣品試驗的用途", details: "其他問題", context: "參考頁" };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "檢查此欄位。";
-      else if (value.length > Number(field.dataset.limit)) message = "這個值太長了。";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "請輸入有效的電子郵箱地址，例如 name@company.com。";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "刪除不支援的控制字元。";
+      if (field.required && !value) message = "請填寫此項。";
+      else if (value.length > Number(field.dataset.limit)) message = "輸入內容超過此欄位的字元上限。";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "請輸入有效的公司電子郵件信箱。";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "請刪除此欄位中無法識別的字元。";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "在準備您的查詢之前,請檢查突出顯示的欄位。";
+      status.textContent = "請檢查標出的欄位，再產生詢問內容。";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,13 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [`詢問類型：${title}`];
     Object.keys(labels).forEach(name => {
       const value = form.elements.namedItem(name).value.trim();
-      if (value) lines.push(`${labels[name]}: ${value}`);
+      if (value) lines.push(`${labels[name]}：${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `收件人：${form.dataset.inquiryEmail}\n主旨：${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +100,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "此查詢過長,無法提供可靠的電子郵件連結。 請將下面的完整文字複製到您的電子郵件應用程式中,並親自傳送。");
+      showPreview(inquiry.text, "詢問內容較長。請複製下方完整內容，貼到自己的電子郵件，確認後寄給業務。");
       return;
     }
-    showPreview(inquiry.text, "您的郵件應用程式可能會開啟;檢視併傳送它。 沒有透過此網站提交任何內容。 您也可以複製下面的文字。");
+    showPreview(inquiry.text, "郵件草稿已準備好。請在郵件程式中確認後自行寄出，也可複製下方內容。");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -111,11 +111,11 @@
     clearOutput(); if (!validate()) return;
     const text = compose().text;
     try {
-      if (!navigator.clipboard?.writeText) throw new Error("剪貼簿不可用");
+      if (!navigator.clipboard?.writeText) throw new Error("無法使用剪貼簿");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "已複製詢價,請將其貼上到您的電子郵件應用程式中,然後檢視併傳送。 沒有透過此網站提交任何內容。");
+      showPreview(text, "已複製詢問內容。請貼到自己的電子郵件中，確認後寄給業務。");
     } catch (_) {
-      showPreview(text, "自動複製不可用。 下面是選擇的完整詢盤。 使用裝置上的複製命令,然後將其貼上到電子郵件應用程式中,並親自傳送。");
+      showPreview(text, "目前無法自動複製。頁面已選取完整內容，請手動複製到自己的電子郵件，再確認並寄出。");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

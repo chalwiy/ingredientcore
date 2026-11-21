@@ -6,7 +6,7 @@
   const status = document.querySelector('[data-catalog-status]');
   const empty = document.querySelector('[data-catalog-empty]');
   const reset = document.querySelector('[data-catalog-reset]');
-  const normalize = value => String(value).toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+  const normalize = value => String(value).normalize('NFKC').toLowerCase().replace(/[\u200b\ufeff]/g, '').replace(/[๐-๙]/g, digit => String(digit.charCodeAt(0) - 0x0e50)).replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const matchesFamily = card => !filter.value || card.dataset.core === filter.value || card.dataset.family === filter.value;
   function update() {
     const query = normalize(search.value);
@@ -27,8 +27,7 @@
       const total = count.closest('[data-catalog-section]').querySelectorAll('[data-product-card]:not([hidden])').length;
       count.textContent = String(total);
     });
-    const category = filter.selectedOptions[0].textContent;
-    status.textContent = "ผลการค้นหา" + ': ' + String(core + guides);
+    status.textContent = "พบ " + (core + guides) + " รายการ";
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

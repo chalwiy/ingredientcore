@@ -7,3 +7,8 @@
 @media(max-width:600px){.company-page .page-section{padding-block:48px}.company-page .company-cards,.company-page .contact-details{grid-template-columns:1fr}.company-page .company-facts,.company-page .company-card{padding:22px}.company-page .company-actions .button{width:100%;white-space:normal}.company-page .page-hero h1{font-size:clamp(37px,10vw,50px)}.company-page .contact-form{padding:22px}.company-page .contact-form__actions .button{white-space:normal}.company-page .company-grid{gap:26px}}
 /* The footer already contains the same contact routes. Keep mobile reading and form controls clear. */
 @media(max-width:600px){.company-page .floating-contact{position:static;flex-direction:row;justify-content:center;padding:0 20px 24px;background:var(--cream)}.company-page .floating-contact a{width:66px;min-height:56px}}
+@media (max-width: 600px) {
+  .company-page .page-cta__inner > div {
+    max-width: 100%;
+  }
+}

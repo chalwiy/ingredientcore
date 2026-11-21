@@ -1,5 +1,5 @@
 (() => {
-  "sử dụng nghiêm ngặt";
+  "use strict";
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "Để trích dẫn, hãy thêm vào chi tiết về mức độ hoặc mục tiêu, ước tính số lượng và điểm đến, nếu biết.",
-    'Sample availability question': "Các mẫu tự do có sẵn.",
-    'Product document request': "Hãy nêu tên sản phẩm hay điểm số và các hồ sơ cần thiết. Đối với chứng nhận, bao gồm cả thị trường đích và mục đích của việc xem xét.",
-    'Application / selection question': "Mô tả thức ăn, quá trình và chức năng đích. Thêm điều kiện thử thích hợp hoặc yêu cầu cụ thể."
+    'Product / quotation inquiry': "Nếu đã biết, hãy ghi cấp hoặc thông số, khối lượng và nơi giao hàng.",
+    'Sample availability question': "Mẫu thử miễn phí. Hãy nêu cấp, mục đích thử và nơi nhận để trao đổi lượng mẫu và vận chuyển.",
+    'Product document request': "Ghi nguyên liệu, cấp và tài liệu cần dùng. Khi yêu cầu chứng nhận, ghi thị trường đích và phạm vi cần kiểm tra.",
+    'Application / selection question': "Mô tả thực phẩm, quy trình và kết quả cần đạt. Bổ sung điều kiện thử hoặc chỉ tiêu cần đối chiếu."
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "Chức năng sản xuất hay nhắm mục tiêu", name: 'Name', email: "Email doanh nghiệp", company: 'Company', market: "Thị trường đích", application: "Ứng dụng thực phẩm", goal: "Chức năng đích", volume: "Tính toán số lượng và thời gian", specification: "Điểm ảnh hay đặc điểm cụ thể", documents: "Cần có tài liệu hay chứng nhận", purpose: "Mục đích của việc xem lại hay thử nghiệm mẫu", details: "Những câu hỏi khác", context: "Trang tham khảo" };
+  const labels = { ingredient: 'Nguyên liệu hoặc chức năng', name: 'Họ và tên', email: 'Email', company: 'Công ty', market: 'Thị trường đích', application: 'Ứng dụng', goal: 'Chức năng cần đạt', volume: 'Khối lượng và thời điểm cần', specification: 'Cấp hoặc thông số kỹ thuật', documents: 'Tài liệu cần dùng', purpose: 'Mục đích', details: 'Thông tin khác', context: 'Trang tham chiếu' };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "Kiểm tra cánh đồng này.";
-      else if (value.length > Number(field.dataset.limit)) message = "Giá trị này là quá dài.";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Nhập địa chỉ email hợp lệ, ví dụ name@company.com.";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Gỡ bỏ ký tự điều khiển không được hỗ trợ.";
+      if (field.required && !value) message = "Vui lòng điền trường này.";
+      else if (value.length > Number(field.dataset.limit)) message = "Vui lòng rút gọn nội dung.";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Nhập địa chỉ email hợp lệ.";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Xóa các ký tự không được hỗ trợ.";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "Kiểm tra các lĩnh vực được tô sáng trước khi chuẩn bị điều tra.";
+      status.textContent = "Kiểm tra các trường được đánh dấu trước khi soạn yêu cầu.";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,14 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [];
     Object.keys(labels).forEach(name => {
-      const value = form.elements.namedItem(name).value.trim();
+      const entry = form.elements.namedItem(name).value.trim();
+      const value = name === 'context' && reference ? entry.split(' — ').at(-1) : entry;
       if (value) lines.push(`${labels[name]}: ${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `Người nhận: ${form.dataset.inquiryEmail}\nTiêu đề: ${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +101,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "Cuộc điều tra này quá dài cho một liên kết email đáng tin cậy. Sao chép đoạn văn bản bên dưới vào ứng dụng email của bạn và gửi nó cho chính bạn.");
+      showPreview(inquiry.text, "Yêu cầu quá dài để mở bằng liên kết email. Sao chép nội dung bên dưới vào email, kiểm tra và tự gửi.");
       return;
     }
-    showPreview(inquiry.text, "Bản nháp thư đã chuẩn bị. Ứng dụng thư có thể mở; xem lại và gửi nó đến đó. Không có gì được gửi qua trang Mạng này. Bạn cũng có thể sao chép văn bản bên dưới.");
+    showPreview(inquiry.text, "Đã chuẩn bị bản nháp. Nếu ứng dụng email mở, hãy kiểm tra và tự gửi. Bạn cũng có thể sao chép nội dung bên dưới để gửi qua webmail.");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -111,11 +112,11 @@
     clearOutput(); if (!validate()) return;
     const text = compose().text;
     try {
-      if (!navigator.clipboard?.writeText) throw new Error("Bảng tạm không sẵn sàng");
+      if (!navigator.clipboard?.writeText) throw new Error("Không thể truy cập bảng tạm.");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "Cần được sao chép. hãy dán nó vào ứng dụng email của bạn, xem lại và gửi nó cho chính mình.");
+      showPreview(text, "Đã sao chép. Dán vào email, kiểm tra và tự gửi yêu cầu.");
     } catch (_) {
-      showPreview(text, "Không thể sao chép tự động. Cuộc điều tra hoàn chỉnh được chọn bên dưới. Hãy dùng lệnh sao chép của thiết bị, rồi dán vào ứng dụng email và gửi cho nó.");
+      showPreview(text, "Văn bản bên dưới đã được chọn. Dùng lệnh sao chép của thiết bị, dán vào email, kiểm tra và tự gửi.");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

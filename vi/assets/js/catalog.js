@@ -6,7 +6,7 @@
   const status = document.querySelector('[data-catalog-status]');
   const empty = document.querySelector('[data-catalog-empty]');
   const reset = document.querySelector('[data-catalog-reset]');
-  const normalize = value => String(value).toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+  const normalize = value => String(value).normalize('NFKD').toLowerCase().replace(/\p{M}/gu, '').replace(/đ/g, 'd').replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const matchesFamily = card => !filter.value || card.dataset.core === filter.value || card.dataset.family === filter.value;
   function update() {
     const query = normalize(search.value);
@@ -27,8 +27,7 @@
       const total = count.closest('[data-catalog-section]').querySelectorAll('[data-product-card]:not([hidden])').length;
       count.textContent = String(total);
     });
-    const category = filter.selectedOptions[0].textContent;
-    status.textContent = "Kết quả" + ': ' + String(core + guides);
+    status.textContent = "Tìm thấy " + (core + guides) + " mục";
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

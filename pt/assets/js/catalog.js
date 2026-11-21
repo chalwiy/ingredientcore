@@ -6,7 +6,7 @@
   const status = document.querySelector('[data-catalog-status]');
   const empty = document.querySelector('[data-catalog-empty]');
   const reset = document.querySelector('[data-catalog-reset]');
-  const normalize = value => String(value).toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+  const normalize = value => String(value).normalize('NFKD').toLowerCase().replace(/\p{M}/gu, '').replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const matchesFamily = card => !filter.value || card.dataset.core === filter.value || card.dataset.family === filter.value;
   function update() {
     const query = normalize(search.value);
@@ -25,10 +25,10 @@
     });
     document.querySelectorAll('[data-catalog-count]').forEach(count => {
       const total = count.closest('[data-catalog-section]').querySelectorAll('[data-product-card]:not([hidden])').length;
-      count.textContent = String(total);
+      count.textContent = total + (total === 1 ? " referência" : " referências");
     });
     const category = filter.selectedOptions[0].textContent;
-    status.textContent = "Resultados" + ': ' + String(core + guides);
+    status.textContent = [filter.value ? category : "", (core + guides) + (core + guides === 1 ? " referência" : " referências") + " (" + core + (core === 1 ? " produto" : " produtos") + ", " + guides + (guides === 1 ? " guia" : " guias") + ")"].filter(Boolean).join(": ");
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

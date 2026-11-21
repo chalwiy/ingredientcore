@@ -117,7 +117,7 @@ if (contactForm) {
       const route=routes[key];
       contactForm.elements.context.value=route.label;
       contextReturn.setAttribute('href',route.path);
-      contextReturn.textContent='Review '+route.label+"（新标签页）";
+      contextReturn.textContent='查看'+route.label+"（新标签页）";
       contextBox.hidden=false;
     }
   } catch { /* Generic static browsing links remain available. */ }
@@ -126,21 +126,21 @@ if (contactForm) {
   const copyButton = document.createElement('button');
   copyButton.type = 'button';
   copyButton.className = 'button button--copy';
-  copyButton.textContent = "复制查询网络邮件";
+  copyButton.textContent = "复制询盘内容";
   const status = document.createElement('p');
   status.className = 'contact-form__status';
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
   const preview = document.createElement('textarea');
   preview.className = 'contact-form__preview';
-  preview.setAttribute('aria-label', "查询文本手动复制");
+  preview.setAttribute('aria-label', "可手动复制的询盘文本");
   preview.readOnly = true;
   preview.hidden = true;
   submitButton.insertAdjacentElement('afterend', copyButton);
   copyButton.insertAdjacentElement('afterend', status);
   status.insertAdjacentElement('afterend', preview);
   const errorNodes = new Map();
-  const labels = {name:"你的名字",email:"商业电子邮件",ingredient:"配料或目标函数",company:'Company',market:"目的地市场",application:"食品应用",goal:"目标函数",volume:"估计数量和时间",specification:"目标等级或规格",documents:"待审查的文件",purpose:"文件请求的目的",details:"流程、包装或交付问题"};
+  const labels = {name:"你的名字",email:"工作邮箱",ingredient:"配料或目标功能",company:'Company',market:"目的地市场",application:"食品应用",goal:"目标功能",volume:"预计采购量和所需时间",specification:"目标牌号或规格",documents:"待审查的文件",purpose:"索取资料的用途",details:"流程、包装或交付问题"};
   const required = new Set(['name','email','ingredient']);
   for (const [name, label] of Object.entries(labels)) {
     const field = contactForm.elements[name];
@@ -172,7 +172,7 @@ if (contactForm) {
       const error = errorNodes.get(name);
       if (!field || !error) continue;
       let message = required.has(name) && !read(name) ? `Enter ${label.toLowerCase()}.` : '';
-      if (name === 'email' && !message && (field.validity?.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(read(name)))) message = "请输入有效的电子邮箱地址，例如 name@example.com。";
+      if (name === 'email' && !message && (field.validity?.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(read(name)))) message = "请输入有效的工作邮箱地址。";
       const limit = Number(field.getAttribute?.('data-limit') || 0);
       if (!message && limit && field.value.length > limit) message = `${label} is too long. Use ${limit} characters or fewer.`;
       error.textContent = message;
@@ -183,7 +183,7 @@ if (contactForm) {
       } else field.removeAttribute?.('aria-invalid');
     }
     if (firstInvalid) {
-      status.textContent = "请检查标记的字段,您的输入仍然在这里。";
+      status.textContent = "请检查标出的字段。已输入的信息仍保留在表单内。";
       firstInvalid.focus?.();
       return false;
     }
@@ -193,15 +193,15 @@ if (contactForm) {
     if (!validate()) return;
     const fields = new FormData(contactForm);
     const subjectTopic = read('ingredient').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').slice(0, 120);
-    const subjectMode = (read('inquiry_type') || "产品查询 联系我们").replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
+    const subjectMode = (read('inquiry_type') || "产品采购询盘").replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
     const subject = `IngredientCore ${subjectMode}: ${subjectTopic}`;
     const entries = [
-      ["查询类型",'inquiry_type'],['Name','name'],["商业电子邮件",'email'],
-      ['Company','company'],["配料或目标函数",'ingredient'],
-      ["食品应用",'application'],["目标函数",'goal'],
-      ["目标等级或规格",'specification'],["估计数量和时间",'volume'],
+      ["询盘类型",'inquiry_type'],['姓名','name'],["工作邮箱",'email'],
+      ['公司','company'],["配料或目标功能",'ingredient'],
+      ["食品应用",'application'],["目标功能",'goal'],
+      ["目标牌号或规格",'specification'],["预计采购量和所需时间",'volume'],
       ["目的地市场",'market'],["所需文件",'documents'],
-      ["文件请求的目的",'purpose'],["其他工艺或装运详情",'details'],
+      ["索取资料的用途",'purpose'],["其他工艺或运输要求",'details'],
       ["参考页",'context']
     ];
     const body = entries.map(([label,name]) => [label, String(fields.get(name) ?? '').trim()])
@@ -222,10 +222,10 @@ if (contactForm) {
     if (!inquiry) return;
     const url = `mailto:${inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showManual(inquiry, "此查询过长,无法提供可靠的电子邮件链接。 请将下面的完整文本复制到您的电子邮件或网络邮件中,然后亲自发送。");
+      showManual(inquiry, "询盘内容较长，请复制下方完整文本，并通过自己的邮箱发送。");
       return;
     }
-    status.textContent = "打开您的电子邮件应用程序,请检查并发送它自己。 如果没有打开,使用复制查询网络邮件。";
+    status.textContent = "邮件草稿已准备好。请在邮件应用中核对并发送，或先复制询盘内容。";
     window.location.href = url;
   });
   copyButton.addEventListener('click', async () => {

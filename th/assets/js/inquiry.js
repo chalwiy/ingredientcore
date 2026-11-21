@@ -1,5 +1,5 @@
 (() => {
-  "ใช้ความเข้มงวด";
+  "use strict";
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "สําหรับ ข้อ ความ ที่ เพิ่ม เติม เข้า ไป ใน ช่อง เกรด หรือ รายการ เป้า หมาย ประมาณ ปริมาณ และ ตลาด ที่ กําหนด ไว้ ถ้า รู้ กัน.",
-    'Sample availability question': "มี ตัว อย่าง ที่ ไม่ มี ใด เหมือน.",
-    'Product document request': "ชื่อ ผลิตภัณฑ์ หรือ คะแนน และ บันทึก ที่ คุณ ต้องการ.",
-    'Application / selection question': "จง อธิบาย ถึง อาหาร, กระบวนการ, และ การ ทํา งาน ของ เป้า หมาย."
+    'Product / quotation inquiry': "ระบุเกรด ปริมาณ และตลาดปลายทาง หากทราบ",
+    'Sample availability question': "ขอตัวอย่างฟรีและสอบถามปริมาณ เกรด และการจัดส่ง",
+    'Product document request': "ระบุผลิตภัณฑ์ เกรด และเอกสารที่ต้องการ",
+    'Application / selection question': "แจ้งประเภทอาหาร กระบวนการผลิต และผลที่ต้องการ"
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "ฟังก์ชัน Poduct หรือเป้าหมาย", name: 'Name', email: "อีเมลของธุรกิจ", company: 'Company', market: "ตลาดปลายทาง", application: "แอพพลิเคชันอาหาร", goal: "ฟังก์ชันเป้าหมาย", volume: "ปริมาณและเวลาโดยประมาณ", specification: "ระดับเป้าหมายหรือค่า", documents: "ต้องการเอกสารหรือใบรับรอง", purpose: "วัตถุประสงค์ของการทบทวนหรือทดลองตัวอย่าง", details: "คําถามอื่น ๆ", context: "หน้าอ้างอิง" };
+  const labels = { ingredient: 'ผลิตภัณฑ์หรือหน้าที่', name: 'ชื่อผู้ติดต่อ', email: 'อีเมล', company: 'บริษัท', market: 'ตลาดปลายทาง', application: 'อาหารและกระบวนการ', goal: 'หน้าที่ที่ต้องการ', volume: 'ปริมาณและวันที่ต้องการ', specification: 'เกรดหรือข้อกำหนด', documents: 'เอกสารที่ต้องการ', purpose: 'วัตถุประสงค์', details: 'ข้อมูลเพิ่มเติม', context: 'หน้าอ้างอิง' };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "ดูสนามนี้สิ";
-      else if (value.length > Number(field.dataset.limit)) message = "ค่านี้ยาวเกินไป";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "กรอกที่อยู่อีเมลที่ถูกต้อง เช่น name@company.com";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "ลบอักขระที่ไม่รองรับการรองรับ";
+      if (field.required && !value) message = "กรุณากรอกข้อมูลในช่องนี้";
+      else if (value.length > Number(field.dataset.limit)) message = "กรุณาย่อข้อความในช่องนี้";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "กรุณากรอกอีเมลให้ถูกต้อง เช่น name@company.com";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "กรุณาลบอักขระที่ระบบไม่รองรับ";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "ตรวจ ดู ที่ สนาม ซึ่ง เน้น เรื่อง นี้ ก่อน เตรียม การ สอบ ถาม.";
+      status.textContent = "ตรวจช่องที่ทำเครื่องหมายไว้ก่อนเตรียมคำขอ";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,14 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [];
     Object.keys(labels).forEach(name => {
-      const value = form.elements.namedItem(name).value.trim();
+      const fieldValue = form.elements.namedItem(name).value.trim();
+      const value = name === 'context' && reference ? fieldValue.split(' — ').at(-1) : fieldValue;
       if (value) lines.push(`${labels[name]}: ${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `ถึง: ${form.dataset.inquiryEmail}\nหัวข้อ: ${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +101,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "การสอบถามนี้ยาวเกินไปสําหรับการเชื่อมโยงอีเมลที่เชื่อถือได้ คัดลอกข้อความที่สมบูรณ์ด้านล่างนี้ไปยังโปรแกรมอีเมลของคุณ แล้วส่งมันด้วยตัวคุณเอง");
+      showPreview(inquiry.text, "คำขอยาวเกินกว่าจะเปิดเป็นอีเมลฉบับร่างผ่านลิงก์ได้ คัดลอกข้อความจากด้านล่างไปวางในอีเมล ตรวจทานและกดส่งเอง");
       return;
     }
-    showPreview(inquiry.text, "เตรียมการรับส่งเมลแล้ว โปรแกรมรับจดหมายของคุณอาจจะเปิดได้ โปรดทบทวนและส่งมันมายังเว็บไซต์นี้โดยไม่มีอะไรได้รับมอบผ่านเว็บไซต์นี้ นอกจากนี้คุณยังคัดลอกข้อความด้านล่างนี้ได้อีกด้วย");
+    showPreview(inquiry.text, "เตรียมอีเมลฉบับร่างแล้ว หากโปรแกรมอีเมลเปิดขึ้น ให้ตรวจทานและกดส่งเอง หรือคัดลอกข้อความจากด้านล่างไปส่งทางเว็บเมล");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -113,9 +114,9 @@
     try {
       if (!navigator.clipboard?.writeText) throw new Error("ไม่มีคลิปบอร์ด");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "ทําสําเนาแบบสอบถาม วางมันลงในโปรแกรมอีเมลของคุณ ทบทวนและส่งด้วยตัวคุณเอง ไม่มีอะไรถูกส่งผ่านเว็บไซต์นี้");
+      showPreview(text, "คัดลอกคำขอแล้ว วางข้อความในอีเมล ตรวจทาน และกดส่งเอง");
     } catch (_) {
-      showPreview(text, "ไม่สามารถคัดลอกได้โดยอัตโนมัติ การสอบสวนที่สมบูรณ์ ถูกเลือกด้านล่างนี้ ใช้ คํา สั่ง ที่ ได้ รับ จาก อุปกรณ์ ของ คุณ แล้ว วาง ไว้ ใน แอพ เมล์ ของ คุณ แล้ว ส่ง ไป ด้วย ตัว คุณ เอง.");
+      showPreview(text, "ระบบเลือกข้อความไว้ด้านล่างแล้ว ใช้คำสั่งคัดลอกของอุปกรณ์ วางในอีเมล ตรวจทาน และกดส่งเอง");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

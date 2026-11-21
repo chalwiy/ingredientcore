@@ -1,5 +1,5 @@
 (() => {
-  "Используйте строго";
+  'use strict';
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "Для котировки добавьте оценку или целевую спецификацию, предполагаемое количество и рынок назначения, если он известен.",
-    'Sample availability question': "Бесплатные образцы. Добавьте продукт или класс, цель испытания и пункт назначения. Продажи обсудят количество и порядок доставки.",
-    'Product document request': "Назовите товар или класс и необходимые записи. Для сертификатов включите рынок назначения и цель вашего обзора.",
-    'Application / selection question': "Опишите пищевую, процессную и целевую функции. Добавьте соответствующие условия испытания или требования к спецификации."
+    'Product / quotation inquiry': "Для предложения укажите марку или спецификацию, ориентировочное количество и место доставки.",
+    'Sample availability question': "Укажите продукт или марку, цель испытания и место доставки. Количество бесплатного образца и условия отправки согласуйте с отделом продаж.",
+    'Product document request': "Укажите продукт или марку и нужные документы. Для сертификатов добавьте целевой рынок и цель проверки.",
+    'Application / selection question': "Опишите готовый продукт, технологию и нужную функцию. Добавьте известные условия испытания и требования к спецификации."
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "Функция продукта или цели", name: 'Name', email: "Бизнес-почта", company: 'Company', market: "Рынок назначения", application: "Пищевая добавка", goal: "Целевая функция", volume: "Предполагаемое количество и сроки", specification: "Целевой класс или спецификация", documents: "Необходимые документы или сертификаты", purpose: "Цель обзора или выборочного испытания", details: "Другие вопросы", context: "Справочная страница" };
+  const labels = { ingredient: "Продукт или функция", name: "Имя", email: "Рабочая почта", company: "Компания", market: "Целевой рынок", application: "Применение", goal: "Функция", volume: "Количество и срок", specification: "Марка или спецификация", documents: "Документы", purpose: "Цель проверки", details: "Дополнительно", context: "Исходная страница" };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "Проверьте это поле.";
-      else if (value.length > Number(field.dataset.limit)) message = "Эта ценность слишком велика.";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Введите действительный адрес электронной почты, например name@company.com.";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Удалите неподдерживаемые контрольные символы.";
+      if (field.required && !value) message = "Заполните это поле.";
+      else if (value.length > Number(field.dataset.limit)) message = "Текст превышает допустимую длину.";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Введите корректный рабочий адрес электронной почты.";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Удалите недопустимые символы.";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "Проверьте выделенные поля, прежде чем готовить запрос.";
+      status.textContent = "Проверьте отмеченные поля.";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,13 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [`Тип запроса: ${title}`];
     Object.keys(labels).forEach(name => {
       const value = form.elements.namedItem(name).value.trim();
       if (value) lines.push(`${labels[name]}: ${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `Кому: ${form.dataset.inquiryEmail}\nТема: ${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +100,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "Этот запрос слишком длинный для надежной ссылки на электронную почту. Скопируйте полный текст ниже в своем приложении электронной почты и отправьте его самостоятельно.");
+      showPreview(inquiry.text, "Запрос слишком длинный для почтовой ссылки. Скопируйте полный текст в новое письмо и отправьте его через свою почту.");
       return;
     }
-    showPreview(inquiry.text, "Подготовлен проект электронной почты. Ваше почтовое приложение может открыться; просмотреть и отправить его туда. Ничто не было отправлено через этот сайт. Вы также можете скопировать текст ниже.");
+    showPreview(inquiry.text, "Черновик готов. Проверьте и отправьте его в почтовой программе. Текст также можно скопировать ниже.");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -111,11 +111,11 @@
     clearOutput(); if (!validate()) return;
     const text = compose().text;
     try {
-      if (!navigator.clipboard?.writeText) throw new Error("Клипборд недоступен");
+      if (!navigator.clipboard?.writeText) throw new Error("Буфер обмена недоступен");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "Запрос скопирован. Вставьте его в свое приложение электронной почты, просмотрите и отправьте самостоятельно. Ничто не было отправлено через этот сайт.");
+      showPreview(text, "Текст скопирован. Вставьте его в новое письмо, проверьте и отправьте через свою почту.");
     } catch (_) {
-      showPreview(text, "Автоматическое копирование недоступно. Полный запрос выбирается ниже. Используйте команду Copy вашего устройства, затем вставьте ее в свое приложение электронной почты и отправьте самостоятельно.");
+      showPreview(text, "Автоматическое копирование недоступно. Скопируйте выделенный текст, вставьте в новое письмо и отправьте через свою почту.");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

@@ -6,16 +6,19 @@
   const status = document.querySelector('[data-catalog-status]');
   const empty = document.querySelector('[data-catalog-empty]');
   const reset = document.querySelector('[data-catalog-reset]');
-  const normalize = value => String(value).toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+  const normalize = value => String(value).normalize('NFKC').toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const matchesFamily = card => !filter.value || card.dataset.core === filter.value || card.dataset.family === filter.value;
   function update() {
     const query = normalize(search.value);
     const tokens = query.split(' ').filter(Boolean);
-    const exactShortName = query && cards.some(card => matchesFamily(card) && normalize(card.dataset.abbreviation) === query);
+    const exactMatch = query && [
+      card => normalize(card.dataset.abbreviation) === query,
+      card => /^[가-힣]{5,}$/.test(query) && normalize(card.dataset.search).split(' ').includes(query),
+    ].find(matches => cards.some(card => matchesFamily(card) && matches(card)));
     let core = 0, guides = 0;
     cards.forEach(card => {
-      const match = matchesFamily(card) && (!query || (exactShortName
-        ? normalize(card.dataset.abbreviation) === query
+      const match = matchesFamily(card) && (!query || (exactMatch
+        ? exactMatch(card)
         : tokens.every(token => normalize(card.dataset.search + ' ' + card.textContent).includes(token))));
       card.hidden = !match;
       if (match) card.dataset.core === 'guides' ? guides++ : core++;
@@ -25,10 +28,10 @@
     });
     document.querySelectorAll('[data-catalog-count]').forEach(count => {
       const total = count.closest('[data-catalog-section]').querySelectorAll('[data-product-card]:not([hidden])').length;
-      count.textContent = String(total);
+      count.textContent = total + "건";
     });
     const category = filter.selectedOptions[0].textContent;
-    status.textContent = "검색결과" + ': ' + String(core + guides);
+    status.textContent = [filter.value ? category : "", "총 " + (core + guides) + "건(주요 제품 " + core + "건, 선정 가이드 " + guides + "건)"].filter(Boolean).join(": ");
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

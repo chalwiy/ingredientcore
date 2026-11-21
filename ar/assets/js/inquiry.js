@@ -1,5 +1,5 @@
 (() => {
-  "استخدام صارم";
+  'use strict';
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "وتضاف، لأغراض اقتباس، المواصفات المحددة للرتب أو الهدف، والكميات المقدرة وسوق المقصد، إذا كان معروفا.",
-    'Sample availability question': "وتتوفر عينات مجانية، إضافة المنتج أو الرتبة، والغرض من المحاكمة والمقصد، وستناقش المبيعات ترتيبات الكمية والشحن.",
-    'Product document request': "سم المنتج أو الصف والسجلات التي تحتاجها، للحصول على الشهادات، تشمل سوق الوجهة والغرض من مراجعتك.",
-    'Application / selection question': "وصف وظيفة الغذاء والعملية والمستهدفة - إضافة ظروف المحاكمة ذات الصلة أو متطلبات المواصفات."
+    'Product / quotation inquiry': "لعرض السعر، اذكر الدرجة أو المواصفات والكمية التقديرية ومكان التسليم.",
+    'Sample availability question': "اذكر المنتج أو الدرجة وغرض الاختبار ومكان التسليم. اتفق مع فريق المبيعات على كمية العينة المجانية وشروط الشحن.",
+    'Product document request': "اذكر المنتج أو الدرجة والوثائق المطلوبة. للشهادات، حدّد سوق الوجهة وغرض المراجعة.",
+    'Application / selection question': "صف الغذاء وطريقة التصنيع والوظيفة المطلوبة. أضف شروط الاختبار أو المواصفات المعروفة."
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "وظيفة الناتج أو الهدف", name: 'Name', email: "البريد الإلكتروني لأغراض العمل", company: 'Company', market: "سوق الوجهة", application: "تطبيق الأغذية", goal: "الوظيفة المستهدفة", volume: "الكمية المقدرة والتوقيت", specification: "الدرجة أو المواصفات المستهدفة", documents: "الوثائق أو الشهادات المطلوبة", purpose: "الغرض من الاستعراض أو اختبار العينة", details: "ثالثا - مسائل أخرى", context: "الصفحة المرجعية" };
+  const labels = { ingredient: "المنتج أو الوظيفة", name: "الاسم", email: "البريد للعمل", company: "الشركة", market: "سوق الوجهة", application: "التطبيق", goal: "الوظيفة", volume: "الكمية والموعد", specification: "الدرجة أو المواصفات", documents: "الوثائق", purpose: "الغرض", details: "معلومات إضافية", context: "الصفحة المرجعية" };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "ضع علامة في هذا الحقل.";
-      else if (value.length > Number(field.dataset.limit)) message = "هذه القيمة طويلة جداً.";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "أدخل عنوان بريد إلكتروني صالحًا، مثل name@company.com.";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "أزالة حروف التحكم غير المدعومة.";
+      if (field.required && !value) message = "أكمل هذا الحقل.";
+      else if (value.length > Number(field.dataset.limit)) message = "تجاوز النص الحد المسموح به.";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "أدخل عنوان بريد إلكتروني صالحاً للعمل.";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "احذف الرموز غير المسموح بها.";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "يرجى التحقق من الحقول الموضحة قبل إعداد استفساراتكم.";
+      status.textContent = "راجع الحقول المشار إليها.";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,13 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [`نوع الطلب: ${title}`];
     Object.keys(labels).forEach(name => {
       const value = form.elements.namedItem(name).value.trim();
       if (value) lines.push(`${labels[name]}: ${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `إلى: ${form.dataset.inquiryEmail}\nالموضوع: ${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +100,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "هذا التحقيق طويل جداً لوصله بريديه موثوق به، ونسخ النص الكامل تحت تطبيقك البريدي وأرسله بنفسك");
+      showPreview(inquiry.text, "الطلب أطول من الحد المتاح لرابط البريد. انسخ النص الكامل والصقه في رسالة جديدة، ثم أرسلها من بريدك.");
       return;
     }
-    showPreview(inquiry.text, "يمكن أن يفتح برنامج بريدك الإلكتروني، وأن يستعرضه ويرسله إلى هناك، ولم يقدم أي شيء من خلال هذا الموقع الشبكي، كما يمكنك أن تنسخ النص الوارد أدناه.");
+    showPreview(inquiry.text, "المسودة جاهزة. راجع الرسالة وأرسلها من تطبيق البريد. يمكنك أيضاً نسخ النص أدناه.");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -111,11 +111,11 @@
     clearOutput(); if (!validate()) return;
     const text = compose().text;
     try {
-      if (!navigator.clipboard?.writeText) throw new Error("لوح التجميع غير متاح");
+      if (!navigator.clipboard?.writeText) throw new Error("الحافظة غير متاحة");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "تم نسخ التحقيق، وإستبقه في تطبيقك الإلكتروني، وراجعه وأرسله بنفسك، لم يتم تقديم شيء من خلال هذا الموقع");
+      showPreview(text, "نُسخ نص الطلب. الصقه في رسالة جديدة وراجعها وأرسلها من بريدك.");
     } catch (_) {
-      showPreview(text, "النسخ الآلي غير متاح. ويرد أدناه اختيار للاستعلام الكامل. استخدموا أوامركم بالنسخ، ثم استجمعوها في تطبيقك الإلكتروني وأرسلوها بنفسك.");
+      showPreview(text, "تعذّر النسخ التلقائي. انسخ النص المحدّد والصقه في رسالة جديدة وأرسلها من بريدك.");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

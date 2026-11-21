@@ -1,5 +1,5 @@
 (() => {
-  "Verwenden Sie streng";
+  'use strict';
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "Fügen Sie für ein Angebot die Güte oder Zielspezifikation, die geschätzte Menge und den Zielmarkt hinzu, falls bekannt.",
-    'Sample availability question': "Kostenlose Muster sind verfügbar. Fügen Sie das Produkt oder die Sorte, den Testzweck und den Bestimmungsort hinzu.",
-    'Product document request': "Geben Sie das Produkt oder die Sorte und die benötigten Datensätze an, und geben Sie bei Zertifikaten den Zielmarkt und den Zweck Ihrer Bewertung an.",
-    'Application / selection question': "Beschreiben Sie die Lebensmittel-, Prozess- und Zielfunktion. Fügen Sie relevante Versuchsbedingungen oder Spezifikationsanforderungen hinzu."
+    'Product / quotation inquiry': "Nennen Sie gewünschte Qualität oder Produktspezifikation, voraussichtliche Menge und Lieferort, soweit bekannt.",
+    'Sample availability question': "Nennen Sie Produkt oder Qualität, Testzweck und Lieferort. Stimmen Sie Menge und Versand des kostenlosen Evaluierungsmusters mit dem Vertrieb ab.",
+    'Product document request': "Nennen Sie Produkt oder Qualität und die benötigten Unterlagen. Geben Sie bei Zertifikaten außerdem Absatzmarkt und Prüfzweck an.",
+    'Application / selection question': "Beschreiben Sie das Lebensmittel, die Prozessbedingungen und die gewünschte Funktion. Ergänzen Sie bekannte Prüfbedingungen oder Spezifikationsanforderungen."
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "Produkt- oder Zielfunktion", name: 'Name', email: "Business-E-Mail", company: 'Company', market: "Zielmarkt", application: "Anwendung in Lebensmitteln", goal: "Zielfunktion", volume: "Geschätzte Menge und Zeitplan", specification: "Zielsorte oder Spezifikation", documents: "Benötigte Dokumente oder Bescheinigungen", purpose: "Zweck der Überprüfung oder Musterprüfung", details: "Andere Fragen zu", context: "Referenzseite" };
+  const labels = { ingredient: 'Produkt oder gewünschte Funktion', name: 'Name', email: 'Geschäftliche E-Mail-Adresse', company: 'Unternehmen', market: 'Vorgesehener Absatzmarkt', application: 'Lebensmittelanwendung', goal: 'Gewünschte Funktion', volume: 'Voraussichtliche Menge und Termin', specification: 'Gewünschte Qualität oder Produktspezifikation', documents: 'Benötigte Unterlagen oder Zertifikate', purpose: 'Zweck der Dokumenten- oder Musterprüfung', details: 'Weitere Fragen', context: 'Ausgangsseite' };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "Aktivieren Sie dieses Feld.";
-      else if (value.length > Number(field.dataset.limit)) message = "Dieser Wert ist zu lang.";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Geben Sie eine gültige E-Mail-Adresse ein, zum Beispiel name@company.com.";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Entfernen Sie nicht unterstützte Steuerzeichen.";
+      if (field.required && !value) message = "Füllen Sie dieses Feld aus.";
+      else if (value.length > Number(field.dataset.limit)) message = "Die Eingabe überschreitet die zulässige Zeichenanzahl.";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Geben Sie eine gültige geschäftliche E-Mail-Adresse ein.";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Entfernen Sie unzulässige Zeichen aus dem Feld.";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -82,13 +82,13 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [`Anfrageart: ${title}`];
     Object.keys(labels).forEach(name => {
       const value = form.elements.namedItem(name).value.trim();
       if (value) lines.push(`${labels[name]}: ${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `Empfänger: ${form.dataset.inquiryEmail}\nBetreff: ${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +100,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "Diese Anfrage ist zu lang für einen zuverlässigen E-Mail-Link, bitte kopieren Sie den vollständigen Text unten in Ihre E-Mail-Anwendung und senden Sie ihn selbst.");
+      showPreview(inquiry.text, "Die Anfrage ist zu lang für einen E-Mail-Link. Kopieren Sie den vollständigen Text in eine neue E-Mail und versenden Sie sie selbst.");
       return;
     }
-    showPreview(inquiry.text, "Ihr E-Mail-Programm kann sich öffnen; überprüfen Sie es und senden Sie es dort. Es wurde nichts über diese Website gesendet. Sie können auch den untenstehenden Text kopieren.");
+    showPreview(inquiry.text, "Der E-Mail-Entwurf ist vorbereitet. Prüfen und versenden Sie ihn in Ihrem E-Mail-Programm. Sie können den angezeigten Text auch kopieren.");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -113,9 +113,9 @@
     try {
       if (!navigator.clipboard?.writeText) throw new Error("Zwischenablage nicht verfügbar");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "Anfrage kopiert, in Ihre E-Mail-Anwendung einfügen, überprüfen und selbst versenden. Es wurde noch nichts über diese Website gesendet.");
+      showPreview(text, "Die Anfrage wurde kopiert. Fügen Sie den Text in eine neue E-Mail ein. Prüfen und versenden Sie die Nachricht selbst.");
     } catch (_) {
-      showPreview(text, "Automatische Kopie ist nicht verfügbar. Die vollständige Anfrage ist unten ausgewählt. Verwenden Sie den Befehl Kopieren Ihres Geräts, fügen Sie ihn dann in Ihre E-Mail-App ein und senden Sie ihn selbst.");
+      showPreview(text, "Automatisches Kopieren ist nicht verfügbar. Kopieren Sie den markierten Text in eine neue E-Mail und versenden Sie sie selbst.");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

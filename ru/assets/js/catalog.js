@@ -6,8 +6,11 @@
   const status = document.querySelector('[data-catalog-status]');
   const empty = document.querySelector('[data-catalog-empty]');
   const reset = document.querySelector('[data-catalog-reset]');
-  const normalize = value => String(value).toLowerCase().replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+  const normalize = value => String(value).normalize('NFKC').toLowerCase().replace(/ё/g, 'е').replace(/[-‐‑–—]/g, ' ').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const matchesFamily = card => !filter.value || card.dataset.core === filter.value || card.dataset.family === filter.value;
+  const plural = new Intl.PluralRules('ru');
+  const positions = { one: 'позиция', few: 'позиции', many: 'позиций' };
+  const countPositions = total => total + ' ' + positions[plural.select(total)];
   function update() {
     const query = normalize(search.value);
     const tokens = query.split(' ').filter(Boolean);
@@ -25,10 +28,10 @@
     });
     document.querySelectorAll('[data-catalog-count]').forEach(count => {
       const total = count.closest('[data-catalog-section]').querySelectorAll('[data-product-card]:not([hidden])').length;
-      count.textContent = String(total);
+      count.textContent = countPositions(total);
     });
     const category = filter.selectedOptions[0].textContent;
-    status.textContent = "Результаты" + ': ' + String(core + guides);
+    status.textContent = [filter.value ? category : '', countPositions(core + guides)].filter(Boolean).join(': ');
     empty.hidden = core + guides !== 0;
     reset.hidden = !query && !filter.value;
   }

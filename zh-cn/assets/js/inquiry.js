@@ -1,5 +1,5 @@
 (() => {
-  "使用严格";
+  'use strict';
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "对于报价,请添加等级或目标规格、估计数量和目的地市场(如果已知 ) 。",
-    'Sample availability question': "免费提供样品,请注明产品或等级、试验目的和目的地,销售人员将讨论数量和运输安排。",
-    'Product document request': "请说明您需要的产品或等级和记录。 对于证书,请包括目标市场和审查目的。",
-    'Application / selection question': "说明食品、工艺和目标功能，并增加相关试验条件或规格要求。"
+    'Product / quotation inquiry': "索取报价时，请尽量注明牌号或目标规格、预计数量和目的地市场。",
+    'Sample availability question': "申请免费样品时，请注明产品或牌号、试验用途和目的地。样品数量及运输安排由销售确认。",
+    'Product document request': "请注明产品或牌号及所需资料。索取证书时，请提供目的地市场和采购审核用途。",
+    'Application / selection question': "请说明食品类型、加工工艺和目标功能，并提供已知的试验条件或规格要求。"
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "产品或目标功能", name: 'Name', email: "商业电子邮件", company: 'Company', market: "目的地市场", application: "食品应用", goal: "目标函数", volume: "估计数量和时间", specification: "目标等级或规格", documents: "所需文件或证书", purpose: "审查或抽样试验的目的", details: "其他问题", context: "参考页" };
+  const labels = { ingredient: "产品或目标功能", name: '姓名', email: "工作邮箱", company: '公司', market: "目的地市场", application: "食品应用", goal: "目标功能", volume: "预计采购量和所需时间", specification: "目标牌号或规格", documents: "所需文件或证书", purpose: "资料审核或样品试验的用途", details: "其他问题", context: "参考页" };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "检查此字段。";
-      else if (value.length > Number(field.dataset.limit)) message = "这个值太长了。";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "请输入有效的电子邮箱地址，例如 name@company.com。";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "删除不支持的控制字符。";
+      if (field.required && !value) message = "请填写此项。";
+      else if (value.length > Number(field.dataset.limit)) message = "输入内容超过此字段的字符上限。";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "请输入有效的工作邮箱地址。";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "请删除此字段中无法识别的字符。";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "在准备您的查询之前,请检查突出显示的字段。";
+      status.textContent = "请检查标出的字段，再准备询盘。";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,13 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [`询盘类型：${title}`];
     Object.keys(labels).forEach(name => {
       const value = form.elements.namedItem(name).value.trim();
-      if (value) lines.push(`${labels[name]}: ${value}`);
+      if (value) lines.push(`${labels[name]}：${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `收件人：${form.dataset.inquiryEmail}\n主题：${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +100,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "此查询过长,无法提供可靠的电子邮件链接。 请将下面的完整文本复制到您的电子邮件应用程序中,并亲自发送。");
+      showPreview(inquiry.text, "询盘内容较长。请将下方完整文本复制到自己的邮箱，核对后发给销售。");
       return;
     }
-    showPreview(inquiry.text, "您的邮件应用程序可能会打开;查看并发送它。 没有通过此网站提交任何内容。 您也可以复制下面的文本。");
+    showPreview(inquiry.text, "邮件草稿已准备好。请在邮件应用中核对并发送，也可以直接复制下方内容。");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -113,9 +113,9 @@
     try {
       if (!navigator.clipboard?.writeText) throw new Error("剪贴板不可用");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "已复制询价,请将其粘贴到您的电子邮件应用程序中,然后查看并发送。 没有通过此网站提交任何内容。");
+      showPreview(text, "已复制询盘。请粘贴到您自己的邮箱，核对后发给销售。");
     } catch (_) {
-      showPreview(text, "自动复制不可用。 下面是选择的完整询盘。 使用设备上的复制命令,然后将其粘贴到电子邮件应用程序中,并亲自发送。");
+      showPreview(text, "自动复制暂不可用。页面已选中完整询盘，请手动复制到自己的邮箱，再核对并发送。");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });

@@ -1,5 +1,5 @@
 (() => {
-  "Use estricto";
+  'use strict';
   const form = document.querySelector('[data-inquiry-form]');
   if (!form) return;
   const status = form.querySelector('[data-inquiry-status]');
@@ -8,15 +8,15 @@
   const extra = form.querySelector('[data-inquiry-extra]');
   const type = form.elements.namedItem('inquiry_type');
   const hints = {
-    'Product / quotation inquiry': "Para una cotización, agregue el grado o la especificación objetivo, la cantidad estimada y el mercado de destino, si se conoce.",
-    'Sample availability question': "Muestras gratuitas están disponibles.Añada el producto o grado, propósito de prueba y destino. Ventas discutirá la cantidad y los arreglos de envío.",
-    'Product document request': "Nombre el producto o grado y los registros que necesita, para certificados, incluya el mercado de destino y el propósito de su revisión.",
-    'Application / selection question': "Describir el alimento, el proceso y la función objetivo. Añadir las condiciones de ensayo o los requisitos de especificación pertinentes."
+    'Product / quotation inquiry': "Para solicitar una cotización, indique el grado o la especificación, la cantidad estimada y el lugar de entrega, si los conoce.",
+    'Sample availability question': "Para solicitar una muestra gratuita, indique el producto o el grado, el objetivo del ensayo y el lugar de entrega. El equipo comercial revisará la cantidad y el envío.",
+    'Product document request': "Indique el producto o el grado y los documentos necesarios. Para los certificados, indique el mercado de destino y la finalidad de la revisión.",
+    'Application / selection question': "Describa el alimento, el proceso y la función requerida. Añada las condiciones de ensayo o los requisitos de especificación que conozca."
   };
   const intentMap = { product: 'Product / quotation inquiry', sample: 'Sample availability question', documents: 'Product document request', application: 'Application / selection question', comparison: 'Application / selection question' };
   const hint = form.querySelector('[data-inquiry-hint]');
   const fields = [...form.querySelectorAll('[data-limit]')];
-  const labels = { ingredient: "Función de producto o objetivo", name: 'Name', email: "Correo electrónico de negocios", company: 'Company', market: "Mercado de destino", application: "Aplicación de alimentos", goal: "Función de objetivo", volume: "Cantidad estimada y tiempo", specification: "Grado o especificación objetivo", documents: "Documentos o certificados necesarios", purpose: "Propósito de la revisión o prueba de muestra", details: "Otras preguntas", context: "Página de referencia" };
+  const labels = { ingredient: "Producto o función requerida", name: "Nombre", email: "Correo electrónico profesional", company: "Empresa", market: "Mercado de destino", application: "Aplicación alimentaria", goal: "Función requerida", volume: "Cantidad estimada y fecha deseada", specification: "Grado o especificación requerida", documents: "Documentos o certificados necesarios", purpose: "Finalidad de la revisión o del ensayo", details: "Otras consultas", context: "Página de origen" };
   fields.forEach(field => {
     field.id ||= `inquiry-${field.name}`;
     const error = document.createElement('span');
@@ -61,10 +61,10 @@
       clearField(field);
       const value = field.value.trim();
       let message = '';
-      if (field.required && !value) message = "Marque este campo.";
-      else if (value.length > Number(field.dataset.limit)) message = "Este valor es demasiado largo.";
-      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Introduce una dirección de correo válida, como name@company.com.";
-      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Eliminar caracteres de control no admitidos.";
+      if (field.required && !value) message = "Complete este campo.";
+      else if (value.length > Number(field.dataset.limit)) message = "El texto supera el límite de caracteres.";
+      else if (field.name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) message = "Introduzca una dirección de correo electrónico profesional válida.";
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (field.tagName === 'INPUT' && /[\r\n\t]/.test(value))) message = "Elimine los caracteres no admitidos en este campo.";
       if (message) {
         field.setAttribute('aria-invalid', 'true');
         const error = document.getElementById(`${field.id}-error`); error.textContent = message; error.hidden = false;
@@ -72,7 +72,7 @@
       }
     });
     if (first) {
-      status.textContent = "Compruebe los campos resaltados antes de preparar su consulta.";
+      status.textContent = "Revise los campos señalados.";
       if (first.closest('details')) extra.open = true;
       first.focus(); return false;
     }
@@ -82,13 +82,13 @@
     const title = type.selectedOptions[0].textContent.trim();
     const ingredient = form.elements.namedItem('ingredient').value.trim();
     const subject = `IngredientCore | ${title} | ${ingredient}`.replace(/[\r\n\t]/g, ' ');
-    const lines = [`Request: ${title}`];
+    const lines = [`Tipo de solicitud: ${title}`];
     Object.keys(labels).forEach(name => {
       const value = form.elements.namedItem(name).value.trim();
       if (value) lines.push(`${labels[name]}: ${value}`);
     });
     const body = lines.join('\n\n');
-    return { subject, body, text: `To: ${form.dataset.inquiryEmail}\nSubject: ${subject}\n\n${body}` };
+    return { subject, body, text: `Para: ${form.dataset.inquiryEmail}\nAsunto: ${subject}\n\n${body}` };
   };
   const showPreview = (text, message) => {
     previewBox.hidden = false; preview.value = text; status.textContent = message;
@@ -100,10 +100,10 @@
     const inquiry = compose();
     const url = `mailto:${form.dataset.inquiryEmail}?subject=${encodeURIComponent(inquiry.subject)}&body=${encodeURIComponent(inquiry.body)}`;
     if (url.length > 1800) {
-      showPreview(inquiry.text, "Esta consulta es demasiado larga para un enlace de correo electrónico confiable.Copie el texto completo a continuación en su aplicación de correo electrónico y envíelo usted mismo.");
+      showPreview(inquiry.text, "La solicitud es demasiado larga para el enlace de correo. Copie el texto completo en un mensaje nuevo y envíelo usted.");
       return;
     }
-    showPreview(inquiry.text, "Su aplicación de correo electrónico puede abrirse; revisarlo y enviarlo allí. Nada ha sido enviado a través de este sitio web. También puede copiar el texto a continuación.");
+    showPreview(inquiry.text, "El borrador está listo. Revíselo en su aplicación de correo y envíelo usted. También puede copiar el texto que aparece aquí.");
     const link = document.createElement('a'); link.href = url; link.hidden = true;
     form.append(link); link.click(); link.remove();
   });
@@ -113,9 +113,9 @@
     try {
       if (!navigator.clipboard?.writeText) throw new Error("Portapapeles no disponible");
       await navigator.clipboard.writeText(text);
-      showPreview(text, "Consulta copiada. Péguela en su aplicación de correo electrónico, revísela y envíela usted mismo.No se ha enviado nada a través de este sitio web.");
+      showPreview(text, "Se ha copiado la solicitud. Pegue el texto en un mensaje nuevo, revíselo y envíelo usted.");
     } catch (_) {
-      showPreview(text, "La copia automática no está disponible. La investigación completa se selecciona a continuación. Utilice el comando Copiar de su dispositivo, después pegarlo en su aplicación de correo electrónico y enviarlo usted mismo.");
+      showPreview(text, "La copia automática no está disponible. Copie el texto seleccionado, péguelo en un mensaje nuevo y envíelo usted.");
     }
   });
   form.querySelectorAll('button[disabled]').forEach(button => { button.disabled = false; });
